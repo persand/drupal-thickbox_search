@@ -1,0 +1,28 @@
+<?php
+/**
+ * @file
+ * Installation functions for Thickbox Search.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+function thickbox_search_install() {
+  switch ($GLOBALS['db_type']) {
+    case 'mysql':
+    case 'mysqli':
+      $weight = db_result(db_query('SELECT MIN(weight) AS weight FROM {system} WHERE status = 1')) - 1;
+      db_query("UPDATE {system} SET weight = %d WHERE name  = '%s'", $weight, 'thickbox_search');
+    break;
+    default:
+      drupal_set_message(t('Your database type is not supported'));
+  }
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function thickbox_search_uninstall() {
+  variable_del('thickbox_search_width');
+  variable_del('thickbox_search_height');
+}

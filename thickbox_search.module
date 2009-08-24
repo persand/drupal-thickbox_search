@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * @file
+ * Author: Per Sandström per at aerob dot se (persand)
+ * The thickbox search module enables thickbox for search links.
+ */
+
+/**
+ * Implementation of hook_init().
+ */
+function thickbox_search_init() {
+  // Code from the block_list funtion in block.module.
+  // If the path doesn't match any of the exeptions, load header files.
+  $path = drupal_get_path_alias($_GET['q']);
+  $regexp = '/^('. preg_replace(array('/(\r\n?|\n)/', '/\\\\\*/', '/(^|\|)\\\\<front\\\\>($|\|)/'), array('|', '.*', '\1'. preg_quote(variable_get('site_frontpage', 'node'), '/') .'\2'), preg_quote(variable_get('thickbox_pages', ''), '/')) .')$/';
+  // Compare with the internal and path alias (if any).
+  $page_match = preg_match($regexp, $path);
+  if ($path != $_GET['q']) {
+    $page_match = $page_match || preg_match($regexp, $_GET['q']);
+  }
+  if (!$page_match) {
+    _thickbox_search_doheader();
+  }
+}
+
+/**
+ * Implementation of hook_menu().
+ */
+function thickbox_search_menu() {
+  $items = array();
+
+	$items['admin/settings/thickbox/search'] = array(
+    'title' => 'Thickbox search',
+    'description' => 'Configure settings for Thickbox search.',
+    'file' => 'thickbox_search.admin.inc',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('thickbox_search_admin_settings'),
+    'access callback' => 'user_access',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+  $items['search/thickbox'] = array(
+    'title' => 'Search',
+    'page callback' => 'theme_thickbox_search',
+    'access arguments' => array('search content'),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Loads the js file.
+ */
+function _thickbox_search_doheader() {
+
+  $path = drupal_get_path('module', 'thickbox_search');
+  
+  // Insert thickbox search settings as javascript settings.
+  $tb_search_settings = array(
+    'width' => variable_get('thickbox_search_width', 160),
+    'height' => variable_get('thickbox_search_height', 320)
+  );
+  drupal_add_js(array('thickbox_search' => $tb_search_settings), 'setting');
+
+  drupal_add_js($path .'/thickbox_search.js');
+
+}
+
+/**
+ * Theme function/menu callback for thickbox_search.
+ */
+
+function theme_thickbox_search() {
+  print drupal_get_form('search_form');
+  exit;
+}

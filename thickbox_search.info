@@ -1,0 +1,7 @@
+name = Thickbox search
+description = Enables a thickbox for links to search/node.
+dependencies[] = search
+dependencies[] = thickbox
+core = 6.x
+version = "6.x-1.0"
+
